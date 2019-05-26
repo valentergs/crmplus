@@ -38,6 +38,9 @@ func (c Controller) Signup(db *sql.DB) http.HandlerFunc {
 			panic(err)
 		}
 
+		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
+		err = row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
+
 		// Hide output of usuario.Senha
 		usuario.Senha = "********"
 
