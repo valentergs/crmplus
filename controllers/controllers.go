@@ -144,6 +144,8 @@ func (c Controller) Admin(db *sql.DB) http.HandlerFunc {
 
 		w.WriteHeader(http.StatusOK)
 
+		w.Header().Set("Content-Type", "application/json")
+
 		utils.ResponseJSON(w, usrs)
 
 	}
