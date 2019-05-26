@@ -67,6 +67,7 @@ func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 
 		// Verificar se usuário existe no DB
 		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
+
 		err := row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -97,6 +98,53 @@ func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 
 		jwt.Token = token
 		utils.ResponseJSON(w, jwt)
+
+	}
+}
+
+//Admin will be exported
+func (c Controller) Admin(db *sql.DB) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var error models.Error
+
+		if r.Method != "GET" {
+			http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
+			return
+		}
+
+		rows, err := db.Query("select * from usuario")
+		if err != nil {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		defer rows.Close()
+
+		usrs := make([]models.Usuario, 0)
+		for rows.Next() {
+			usr := models.Usuario{}
+			err := rows.Scan(&usr.ID, &usr.Nome, &usr.Sobrenome, &usr.Senha, &usr.Email, &usr.Celular, &usr.Superuser, &usr.Ativo, &usr.Departamento)
+			if err != nil {
+				http.Error(w, http.StatusText(500), 500)
+				return
+			}
+			usrs = append(usrs, usr)
+		}
+		if err != nil {
+			if err == sql.ErrNoRows {
+				error.Message = "Usuário inexistente"
+				utils.RespondWithError(w, http.StatusBadRequest, error)
+				return
+			} else {
+				log.Fatal(err)
+			}
+		}
+
+		w.WriteHeader(http.StatusOK)
+
+		utils.ResponseJSON(w, usrs)
 
 	}
 }
