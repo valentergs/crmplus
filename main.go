@@ -23,7 +23,11 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/signup", controller.Signup(db)).Methods("POST")
 	router.HandleFunc("/login", controller.Login(db)).Methods("POST")
-	router.HandleFunc("/admin", middlewares.TokenVerifyMiddleware(controller.Admin(db))).Methods("GET")
+	// router.HandleFunc("/usuario", middlewares.TokenVerifyMiddleware(controller.UsuarioGetAll(db))).Methods("GET")
+	// router.HandleFunc("/usuario/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioGetOne(db))).Methods("GET")
+	router.HandleFunc("/usuario", controller.UsuarioGetAll(db)).Methods("GET")
+	router.HandleFunc("/usuario/{id}", controller.UsuarioGetOne(db)).Methods("GET")
+	router.HandleFunc("/api/cliente", middlewares.TokenVerifyMiddleware(controller.ClienteAPI(db))).Methods("GET")
 
 	log.Println("Listen on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", router))
