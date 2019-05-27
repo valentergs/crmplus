@@ -21,12 +21,11 @@ func main() {
 
 	// gorilla.mux
 	router := mux.NewRouter()
-	router.HandleFunc("/signup", controller.Signup(db)).Methods("POST")
 	router.HandleFunc("/login", controller.Login(db)).Methods("POST")
-	// router.HandleFunc("/usuario", middlewares.TokenVerifyMiddleware(controller.UsuarioGetAll(db))).Methods("GET")
-	// router.HandleFunc("/usuario/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioGetOne(db))).Methods("GET")
-	router.HandleFunc("/usuario", controller.UsuarioGetAll(db)).Methods("GET")
-	router.HandleFunc("/usuario/{id}", controller.UsuarioGetOne(db)).Methods("GET")
+	router.HandleFunc("/usuario/add", controller.UsuarioAdd(db)).Methods("POST")
+	router.HandleFunc("/usuario", middlewares.TokenVerifyMiddleware(controller.UsuarioGetAll(db))).Methods("GET")
+	router.HandleFunc("/usuario/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioGetOne(db))).Methods("GET")
+	router.HandleFunc("/usuario/delete/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioDeleteOne(db))).Methods("DELETE")
 	router.HandleFunc("/api/cliente", middlewares.TokenVerifyMiddleware(controller.ClienteAPI(db))).Methods("GET")
 
 	log.Println("Listen on port 8080...")

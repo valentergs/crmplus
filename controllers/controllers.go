@@ -17,8 +17,8 @@ import (
 //Controller will be exported
 type Controller struct{}
 
-//Signup will be exported
-func (c Controller) Signup(db *sql.DB) http.HandlerFunc {
+//UsuarioAdd will be exported
+func (c Controller) UsuarioAdd(db *sql.DB) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -146,8 +146,6 @@ func (c Controller) UsuarioGetAll(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
-		w.WriteHeader(http.StatusOK)
-
 		w.Header().Set("Content-Type", "application/json")
 
 		utils.ResponseJSON(w, clts)
@@ -190,6 +188,37 @@ func (c Controller) UsuarioGetOne(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		utils.ResponseJSON(w, usuario)
+
+	}
+}
+
+//UsuarioDeleteOne will be exported
+func (c Controller) UsuarioDeleteOne(db *sql.DB) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var error models.Error
+		//var usuario models.Usuario
+
+		if r.Method != "DELETE" {
+			http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Params is the values informed at the URL.
+		params := mux.Vars(r)
+		id, err := strconv.Atoi(params["id"])
+		if err != nil {
+			error.Message = "Numero ID inválido"
+		}
+
+		//The "id" used in this argument brings the value assigned at the "params"
+		db.QueryRow("DELETE FROM usuario where usuario_id=$1;", id)
+
+		SuccessMessage := "Usuário deletado com sucesso!"
+
+		w.Header().Set("Content-Type", "application/json")
+		utils.ResponseJSON(w, SuccessMessage)
 
 	}
 }
