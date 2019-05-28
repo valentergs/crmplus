@@ -165,7 +165,7 @@ func (c Controller) UsuarioGetOne(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Params is the values informed at the URL.
+		// Params are the values informed by the user at the URL.
 		params := mux.Vars(r)
 		id, err := strconv.Atoi(params["id"])
 		if err != nil {
