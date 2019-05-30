@@ -29,7 +29,6 @@ func main() {
 	//router.HandleFunc("/usuario/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioGetOne(db))).Methods("GET")
 	router.HandleFunc("/usuario/{id}", controller.UsuarioGetOne(db)).Methods("GET")
 	router.HandleFunc("/usuario/delete/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioDeleteOne(db))).Methods("DELETE")
-	router.HandleFunc("/api/cliente", middlewares.TokenVerifyMiddleware(controller.ClienteAPI(db))).Methods("GET")
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
