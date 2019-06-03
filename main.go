@@ -10,7 +10,6 @@ import (
 	"github.com/rs/cors"
 	"github.com/user/CRMplus/controllers"
 	"github.com/user/CRMplus/driver"
-	"github.com/user/CRMplus/middlewares"
 )
 
 var db *sql.DB
@@ -28,17 +27,17 @@ func main() {
 	router.HandleFunc("/usuario", controller.UsuarioGetAll(db)).Methods("GET")
 	//router.HandleFunc("/usuario/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioGetOne(db))).Methods("GET")
 	router.HandleFunc("/usuario/{id}", controller.UsuarioGetOne(db)).Methods("GET")
-	router.HandleFunc("/usuario/delete/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioDeleteOne(db))).Methods("DELETE")
+	router.HandleFunc("/usuario/delete/{id}", controller.UsuarioDeleteOne(db)).Methods("DELETE")
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodDelete},
+		AllowedOrigins:   []string{"http://localhost:3001"},
 		AllowCredentials: true,
-		AllowedHeaders: []string{
-			"*",
-		},
+		// Enable Debugging for testing, consider disabling in production
+		AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions},
+		Debug:          true,
 	})
 
+	// Insert the middleware
 	handler := c.Handler(router)
 
 	log.Println("Listen on port 8080...")

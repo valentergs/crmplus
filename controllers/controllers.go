@@ -17,43 +17,6 @@ import (
 //Controller will be exported
 type Controller struct{}
 
-//UsuarioAdd will be exported
-func (c Controller) UsuarioAdd(db *sql.DB) http.HandlerFunc {
-
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		var usuario models.Usuario
-
-		json.NewDecoder(r.Body).Decode(&usuario)
-
-		// Hash usuario.Senha
-		hash, err := bcrypt.GenerateFromPassword([]byte(usuario.Senha), 10)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Assign hash to usuario.Senha
-		usuario.Senha = string(hash)
-
-		sqlstmt := `insert into usuario (nome, sobrenome, senha, email, celular, superuser, ativo, departamento) values ($1,$2,$3,$4,$5,$6,$7,$8);`
-		_, err = db.Exec(sqlstmt, usuario.Nome, usuario.Sobrenome, usuario.Senha, usuario.Email, usuario.Celular, usuario.Superuser, usuario.Ativo, usuario.Departamento)
-		if err != nil {
-			panic(err)
-		}
-
-		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
-		err = row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
-
-		// Hide output of usuario.Senha
-		usuario.Senha = "********"
-
-		w.Header().Set("Content-Type", "application/json")
-
-		utils.ResponseJSON(w, usuario)
-
-	}
-}
-
 // Login will be exported
 func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 
@@ -102,6 +65,43 @@ func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 
 		jwt.Token = token
 		utils.ResponseJSON(w, jwt)
+
+	}
+}
+
+//UsuarioAdd will be exported
+func (c Controller) UsuarioAdd(db *sql.DB) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var usuario models.Usuario
+
+		json.NewDecoder(r.Body).Decode(&usuario)
+
+		// Hash usuario.Senha
+		hash, err := bcrypt.GenerateFromPassword([]byte(usuario.Senha), 10)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Assign hash to usuario.Senha
+		usuario.Senha = string(hash)
+
+		sqlstmt := `insert into usuario (nome, sobrenome, senha, email, celular, superuser, ativo, departamento) values ($1,$2,$3,$4,$5,$6,$7,$8);`
+		_, err = db.Exec(sqlstmt, usuario.Nome, usuario.Sobrenome, usuario.Senha, usuario.Email, usuario.Celular, usuario.Superuser, usuario.Ativo, usuario.Departamento)
+		if err != nil {
+			panic(err)
+		}
+
+		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
+		err = row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
+
+		// Hide output of usuario.Senha
+		usuario.Senha = "********"
+
+		w.Header().Set("Content-Type", "application/json")
+
+		utils.ResponseJSON(w, usuario)
 
 	}
 }
@@ -219,6 +219,7 @@ func (c Controller) UsuarioDeleteOne(db *sql.DB) http.HandlerFunc {
 		SuccessMessage := "Usuário deletado com sucesso!"
 
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		utils.ResponseJSON(w, SuccessMessage)
 
 	}
