@@ -27,10 +27,11 @@ func main() {
 	router.HandleFunc("/usuario", controller.UsuarioGetAll(db)).Methods("GET")
 	//router.HandleFunc("/usuario/{id}", middlewares.TokenVerifyMiddleware(controller.UsuarioGetOne(db))).Methods("GET")
 	router.HandleFunc("/usuario/{id}", controller.UsuarioGetOne(db)).Methods("GET")
+	router.HandleFunc("/search/usuario", controller.Search(db)).Methods("GET").Queries("q", "{q}")
 	router.HandleFunc("/usuario/delete/{id}", controller.UsuarioDeleteOne(db)).Methods("DELETE")
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3001"},
+		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowCredentials: true,
 		// Enable Debugging for testing, consider disabling in production
 		AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions},

@@ -193,6 +193,55 @@ func (c Controller) UsuarioGetOne(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+//Search will be exported
+func (c Controller) Search(db *sql.DB) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var error models.Error
+		// var usuario models.Usuario
+
+		if r.Method != "GET" {
+			http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
+			return
+		}
+
+		query := r.URL.Query().Get("q")
+
+		rows, err := db.Query("select * from usuario where nome=$1 or sobrenome=$2;", query, query)
+		if err != nil {
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+
+		defer rows.Close()
+
+		clts := make([]models.Usuario, 0)
+		for rows.Next() {
+			clt := models.Usuario{}
+			err := rows.Scan(&clt.ID, &clt.Nome, &clt.Sobrenome, &clt.Senha, &clt.Email, &clt.Celular, &clt.Superuser, &clt.Ativo, &clt.Departamento)
+			if err != nil {
+				http.Error(w, http.StatusText(500), 500)
+				return
+			}
+			clts = append(clts, clt)
+		}
+		if err != nil {
+			if err == sql.ErrNoRows {
+				error.Message = "Usuário inexistente"
+				utils.RespondWithError(w, http.StatusBadRequest, error)
+				return
+			} else {
+				log.Fatal(err)
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		utils.ResponseJSON(w, clts)
+
+	}
+}
+
 //UsuarioDeleteOne will be exported
 func (c Controller) UsuarioDeleteOne(db *sql.DB) http.HandlerFunc {
 
