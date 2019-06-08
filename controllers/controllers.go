@@ -208,7 +208,7 @@ func (c Controller) Search(db *sql.DB) http.HandlerFunc {
 
 		query := r.URL.Query().Get("q")
 
-		rows, err := db.Query("select * from usuario where nome=$1 or sobrenome=$2;", query, query)
+		rows, err := db.Query("select * from usuario where nome ilike '%' || $1 || '%' or sobrenome ilike '%' || $2 || '%';", query, query)
 		if err != nil {
 			http.Error(w, http.StatusText(500), 500)
 			return
