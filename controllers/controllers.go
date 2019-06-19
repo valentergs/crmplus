@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -92,6 +93,8 @@ func (c Controller) UsuarioAdd(db *sql.DB) http.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
+
+		fmt.Println(err)
 
 		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
 		err = row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
@@ -269,6 +272,43 @@ func (c Controller) UsuarioDeleteOne(db *sql.DB) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		utils.ResponseJSON(w, SuccessMessage)
+
+	}
+}
+
+//UsuarioUpdate will be exported
+func (c Controller) UsuarioUpdate(db *sql.DB) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var usuario models.Usuario
+		var error models.Error
+
+		if r.Method != "PUT" {
+			http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Params is the values informed at the URL.
+		params := mux.Vars(r)
+		id, err := strconv.Atoi(params["id"])
+		if err != nil {
+			error.Message = "Numero ID inválido"
+		}
+
+		json.NewDecoder(r.Body).Decode(&usuario)
+
+		sqlstmt := `UPDATE usuario SET nome=$1, sobrenome=$2, senha=$3, email=$4, celular=$5, superuser=$6, ativo=$7, departamento=$8 WHERE usuario_id=$9;`
+		_, err = db.Exec(sqlstmt, usuario.Nome, usuario.Sobrenome, usuario.Senha, usuario.Email, usuario.Celular, usuario.Superuser, usuario.Ativo, usuario.Departamento, id)
+		if err != nil {
+			panic(err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		SuccessMessage := "Usuário atualizado com sucesso!"
+
 		utils.ResponseJSON(w, SuccessMessage)
 
 	}
