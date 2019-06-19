@@ -299,17 +299,20 @@ func (c Controller) UsuarioUpdate(db *sql.DB) http.HandlerFunc {
 
 		json.NewDecoder(r.Body).Decode(&usuario)
 
-		sqlstmt := `UPDATE usuario SET nome=$1, sobrenome=$2, senha=$3, email=$4, celular=$5, superuser=$6, ativo=$7, departamento=$8 WHERE usuario_id=$9;`
-		_, err = db.Exec(sqlstmt, usuario.Nome, usuario.Sobrenome, usuario.Senha, usuario.Email, usuario.Celular, usuario.Superuser, usuario.Ativo, usuario.Departamento, id)
+		sqlstmt := `UPDATE usuario SET nome=$1, sobrenome=$2, email=$3, celular=$4, superuser=$5, ativo=$6, departamento=$7 WHERE usuario_id=$8;`
+		_, err = db.Exec(sqlstmt, usuario.Nome, usuario.Sobrenome, usuario.Email, usuario.Celular, usuario.Superuser, usuario.Ativo, usuario.Departamento, id)
 		if err != nil {
 			panic(err)
 		}
 
+		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
+		err = row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
+
 		w.Header().Set("Content-Type", "application/json")
 
-		SuccessMessage := "Usuário atualizado com sucesso!"
+		// SuccessMessage := "Usuário atualizado com sucesso!"
 
-		utils.ResponseJSON(w, SuccessMessage)
+		utils.ResponseJSON(w, usuario)
 
 	}
 }
