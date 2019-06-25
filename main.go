@@ -22,6 +22,7 @@ func main() {
 	// gorilla.mux
 	router := mux.NewRouter()
 	router.HandleFunc("/login", controller.Login(db)).Methods("POST")
+	router.HandleFunc("/logged", controller.Logged(db)).Methods("GET")
 	router.HandleFunc("/usuario/add", controller.UsuarioAdd(db)).Methods("POST")
 	//router.HandleFunc("/usuario", middlewares.TokenVerifyMiddleware(controller.UsuarioGetAll(db))).Methods("GET")
 	router.HandleFunc("/usuario", controller.UsuarioGetAll(db)).Methods("GET")
@@ -36,6 +37,7 @@ func main() {
 		AllowCredentials: true,
 		// Enable Debugging for testing, consider disabling in production
 		AllowedMethods: []string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodPut, http.MethodOptions},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
 		Debug:          true,
 	})
 

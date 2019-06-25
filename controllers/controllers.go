@@ -7,6 +7,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/gorilla/mux"
 
@@ -18,6 +21,12 @@ import (
 //Controller will be exported
 type Controller struct{}
 
+//Claims will be exported
+type Claims struct {
+	Email string `json:"email"`
+	jwt.StandardClaims
+}
+
 // Login will be exported
 func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 
@@ -28,9 +37,10 @@ func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 		var error models.Error
 
 		json.NewDecoder(r.Body).Decode(&usuario)
+		fmt.Println(usuario)
 
 		// Essa é a senha passada pelo usuário quando enviar o request
-		senha := usuario.Senha
+		password := usuario.Senha
 
 		// Verificar se usuário existe no DB
 		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
@@ -54,7 +64,7 @@ func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 		// usuario.Senha é o resultado do DB query
 		hashedPassword := usuario.Senha
 
-		err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(senha))
+		err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 
 		if err != nil {
 			error.Message = "Senha inválida"
@@ -62,10 +72,70 @@ func (c Controller) Login(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		//w.WriteHeader(http.StatusOK)
-
 		jwt.Token = token
 		utils.ResponseJSON(w, jwt)
+
+	}
+}
+
+//Logged will be exported
+func (c Controller) Logged(db *sql.DB) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		var erro models.Error
+		var usuario models.Usuario
+		var jwtKey = []byte("secret")
+
+		if r.Method != "GET" {
+			http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
+			return
+		}
+
+		// this header should have a key/value pair called "Authorization". "authHeader" will grab the key
+		authHeader := r.Header.Get("Authorization")
+		// bearerToken will remove the empty space found on the value
+		bearerToken := strings.Split(authHeader, " ")
+		// here we catch the value of bearerToken[1] leaving the word "bearer" out.
+		authToken := bearerToken[1]
+
+		// Initialize a new instance of `Claims`
+		claims := &Claims{}
+
+		tkn, err := jwt.ParseWithClaims(authToken, claims, func(token *jwt.Token) (interface{}, error) {
+			return jwtKey, nil
+		})
+
+		if !tkn.Valid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		if err != nil {
+			if err == jwt.ErrSignatureInvalid {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		row := db.QueryRow("select * from usuario where email=$1;", claims.Email)
+		err = row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
+		if err != nil {
+			fmt.Println(err)
+			if err == sql.ErrNoRows {
+				erro.Message = "Usuário inexistente"
+				utils.RespondWithError(w, http.StatusBadRequest, erro)
+				return
+			} else {
+				log.Fatal(err)
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		utils.ResponseJSON(w, usuario)
 
 	}
 }
@@ -93,8 +163,6 @@ func (c Controller) UsuarioAdd(db *sql.DB) http.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
-
-		fmt.Println(err)
 
 		row := db.QueryRow("select * from usuario where email=$1;", usuario.Email)
 		err = row.Scan(&usuario.ID, &usuario.Nome, &usuario.Sobrenome, &usuario.Senha, &usuario.Email, &usuario.Celular, &usuario.Superuser, &usuario.Ativo, &usuario.Departamento)
