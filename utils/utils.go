@@ -7,7 +7,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
-	"github.com/user/CRMplus/models"
+	"github.com/valentergs/CRMplus/models"
 )
 
 //RespondWithError will be exported

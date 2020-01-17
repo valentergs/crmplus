@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/user/CRMplus/models"
-	"github.com/user/CRMplus/utils"
+	"github.com/valentergs/CRMplus/models"
+	"github.com/valentergs/CRMplus/utils"
 )
 
 //TokenVerifyMiddleware will validate the token that was sent by the user giving access to the "protectedend point".  It takes "next" as an argument - it is triggered after the token is validated.

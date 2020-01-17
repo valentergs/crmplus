@@ -9,8 +9,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/user/CRMplus/models"
-	"github.com/user/CRMplus/utils"
+	"github.com/valentergs/CRMplus/models"
+	"github.com/valentergs/CRMplus/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
