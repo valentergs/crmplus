@@ -8,8 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/rs/cors"
-	"github.com/user/CRMplus/controllers"
-	"github.com/user/CRMplus/driver"
+	"github.com/valentergs/CRMplus/controllers"
+	"github.com/valentergs/CRMplus/driver"
 )
 
 var db *sql.DB
